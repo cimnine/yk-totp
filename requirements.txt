@@ -1,0 +1,4 @@
+click
+keyring
+yubikey-manager
+setuptools
