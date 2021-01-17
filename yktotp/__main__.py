@@ -4,7 +4,7 @@ from click import echo
 from ykman import __version__ as YKMAN_VERSION
 
 from .password import password_group
-from .tool import TOOL_NAME, TOOL_VERSION
+from .tool import TOOL_NAME, TOOL_VERSION, TOOL_PREFIX
 from .totp import totp_group
 from .yk import yubikey_group
 
@@ -27,4 +27,4 @@ for SUBGROUP in SUBGROUPS:
   cli.add_command(SUBGROUP)
 
 if __name__ == '__main__':
-  cli()
+  cli(auto_envvar_prefix=TOOL_PREFIX)

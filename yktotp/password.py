@@ -4,7 +4,7 @@ import keyring
 from click import echo
 from click.exceptions import Abort
 
-from .error import PasswordError
+from .error import WrongPasswordError
 from .tool import TOOL_NAME
 from .lib import getDevice, getController, validate
 
@@ -48,8 +48,8 @@ def remember(ctx):
       break
     except Abort:
       exit(1)
-    except PasswordError:
-      echo("Could not validate password. Try again.")
+    except WrongPasswordError:
+      echo("Could not validate password, possibly wrong password. Try again.")
       continue
 
   keyring.set_password(TOOL_NAME, str(yk_serial), password)

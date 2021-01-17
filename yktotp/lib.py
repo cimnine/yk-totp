@@ -1,10 +1,13 @@
+import keyring
+
 from click import echo, prompt
 from click.exceptions import Abort
 from ykman.descriptor import list_devices
 from ykman.oath import OathController
 from ykman.util import TRANSPORT
 
-from .error import PasswordError, KeyNotFound
+from .tool import TOOL_NAME
+from .error import WrongPasswordError, UndefinedPasswordError, KeyNotFound, UndefinedDevice
 
 def getDevices():
   return list_devices(transports=TRANSPORT.CCID)
@@ -25,7 +28,7 @@ def getDevice(serial=None):
   selectedDeviceIndex = 0
   if len(devices) > 1:
     for deviceIndex in range(len(devices)):
-      echo("%d   %s" % (deviceIndex+1, devices[deviceIndex]))
+      echo("%d   %s" % (deviceIndex+1, devices[deviceIndex].serial))
 
     while True:
       try:
@@ -48,6 +51,35 @@ def getController(device=None):
   return OathController(device.driver)
 
 
+def getUnlockedController(device=None, password=None):
+  if device is None:
+    device = getDevice()
+  if device is None:
+    raise UndefinedDevice
+
+  controller = OathController(device.driver)
+  if not controller.locked:
+    return controller
+
+  if not password:
+    password = getPassword(device)
+  if not password:
+    try:
+      password = prompt("Password for YubiKey '%d'" % device.serial, hide_input=True, type=str, err=True)
+    except Abort:
+      raise UndefinedPasswordError
+
+  try:
+    key = controller.derive_key(password)
+    controller.validate(key)
+  except Exception:
+    raise WrongPasswordError
+
+  return controller
+
+def getPassword(device):
+  return keyring.get_password(TOOL_NAME, str(device.serial))
+
 def validate(password, controller=None, device=None):
   if controller is None:
     controller = getController(device)
@@ -57,4 +89,4 @@ def validate(password, controller=None, device=None):
     controller.validate(key)
     return
   except Exception:
-    raise PasswordError
+    raise WrongPasswordError
