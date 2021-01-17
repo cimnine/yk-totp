@@ -1,5 +1,9 @@
 # yk-totp
 
+![PyPI Version](https://img.shields.io/pypi/v/yk-totp?style=flat-square)
+![PyPI License](https://img.shields.io/pypi/l/yk-totp?style=flat-square)
+![PyPI Status](https://img.shields.io/pypi/status/yk-totp?style=flat-square)
+
 `yk-totp` is a little CLI util for YubiKeys,
 that will generate TOTP codes upon request.
 
@@ -7,8 +11,8 @@ The added benefit compared to [the official `ykman`][ykman] is that it offers
 to store the password for unlocking your YubiKey in your system's keyring,
 whereas `ykman` stores your password in it's config file.
 (While the password is stored as `PBKDF2HMAC`-hash and not in plain-text,
-this hash is all that is required to get to your 2FA
-but this hash is not protected in anyway.)
+this hash is all that is required to get to your 2FA,
+yet this hash is not protected in anyway.)
 
 This allows `yk-totp` to be used in other tools (like in an [Alfred Worflow][alred-wf])
 which don't offer facilities to store or enter a password,
