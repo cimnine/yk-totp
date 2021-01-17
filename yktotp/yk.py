@@ -1,3 +1,5 @@
+import click
+
 from click import echo, prompt
 from click.exceptions import Abort
 
@@ -6,6 +8,26 @@ from ykman.util import TRANSPORT
 from ykman.oath import OathController
 
 from .error import PasswordError
+
+@click.group(name="yubikey")
+def yubikey_group():
+  pass
+
+@yubikey_group.command()
+@click.option('-v', '--version', is_flag=True, help='Show the version of each YubiKey')
+@click.option('-f', '--form-factor', is_flag=True, help='Show the form factor of each YubiKey')
+def list(version, form_factor):
+  devices = list_devices(transports=TRANSPORT.CCID)
+  for device in devices:
+    suffix = ""
+
+    if version:
+      suffix += ", Version %d.%d.%d" % (device.version[0], device.version[1], device.version[2])
+
+    if form_factor:
+      suffix += ", %s" % device.form_factor
+
+    echo(str(device.serial) + suffix)
 
 def getDevice():
   devices = list(list_devices(transports=TRANSPORT.CCID))
