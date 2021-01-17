@@ -31,7 +31,7 @@ Use the same command to update to a new version.
 ## Licensing and Copyright
 
 This code is copyrighted.
-But it can be used under the terms of the [MIT license](./License) for your own purposes.
+But it can be used under the terms of the [MIT license](./LICENSE) for your own purposes.
 It builds upon the following third party modules:
 
 - [keyring][keyring] for the interaction with the operating system's keyring, which is MIT licensed.
