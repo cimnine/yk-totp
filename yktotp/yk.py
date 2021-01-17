@@ -2,70 +2,55 @@ import click
 
 from click import echo, prompt
 from click.exceptions import Abort
+from keyring import get_password
 
-from ykman.descriptor import list_devices
-from ykman.util import TRANSPORT
-from ykman.oath import OathController
-
-from .error import PasswordError
+from .tool import TOOL_NAME
+from .lib import getDevices, getController
 
 @click.group(name="yubikey")
 def yubikey_group():
   pass
 
+
 @yubikey_group.command()
 @click.option('-v', '--version', is_flag=True, help='Show the version of each YubiKey')
 @click.option('-f', '--form-factor', is_flag=True, help='Show the form factor of each YubiKey')
-def list(version, form_factor):
-  devices = list_devices(transports=TRANSPORT.CCID)
+@click.option('-p', '--password', is_flag=True, help='Show if a password is required or not for each YubiKey')
+@click.option('-r', '--remembered-password', is_flag=True, help='Show if a password is remembered for each YubiKey')
+@click.option('+P', '--requires-password', is_flag=True, help='Show devices that require a password (and it is not known).')
+@click.option('-P', '--requires-no-password', is_flag=True, help="Show devices that don't require a password (or it is remembered).")
+def list(version, form_factor, password, remembered_password, requires_password, requires_no_password):
+  devices = getDevices()
   for device in devices:
     suffix = ""
 
     if version:
-      suffix += ", Version %d.%d.%d" % (device.version[0], device.version[1], device.version[2])
+      v = device.version
+      suffix += ", Version %d.%d.%d" % (v[0], v[1], v[2])
 
     if form_factor:
       suffix += ", %s" % device.form_factor
 
-    echo(str(device.serial) + suffix)
+    serial = str(device.serial)
 
-def getDevice():
-  devices = list(list_devices(transports=TRANSPORT.CCID))
+    password_remembered = get_password(TOOL_NAME, serial) != None
+    if remembered_password:
+      suffix += ", Password Remembered: %s" % (
+          "yes" if password_remembered else "no")
 
-  if len(devices) == 0:
-    echo("No YubiKey discovered.")
-    exit(1)
+    device_requires_password = None
+    if password or requires_password:
+      controller = getController(device)
+      device_requires_password = controller.locked
 
-  selectedDeviceIndex = 0
-  if len(devices) > 1:
-    for deviceIndex in range(len(devices)):
-      echo("%d   %s" % (deviceIndex+1, devices[deviceIndex]))
+    if password:
+      suffix += ", Password Required: %s" % (
+        "yes" if device_requires_password else "no")
 
-    while True:
-      try:
-        selectedDeviceIndex = -1 + int(prompt("Select device: ", default=1, type=int))
-        if selectedDeviceIndex >= 0 and selectedDeviceIndex < len(devices):
-          break
-      except Abort:
-        exit(1)
-      except ValueError:
-        continue
+    if requires_password != requires_no_password:
+      if requires_password and device_requires_password and password_remembered:
+        continue;
+      if requires_no_password and device_requires_password and not password_remembered:
+        continue;
 
-  return devices[selectedDeviceIndex]
-
-def getController(device=None):
-  if device is None:
-    device = getDevice()
-
-  return OathController(device.driver)
-
-def validate(password, controller=None, device=None):
-  if controller is None:
-    controller = getController(device)
-
-  key = controller.derive_key(password)
-  try:
-    controller.validate(key)
-    return
-  except Exception:
-    raise PasswordError
+    echo(serial + suffix)

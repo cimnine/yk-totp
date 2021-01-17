@@ -6,7 +6,7 @@ from click.exceptions import Abort
 
 from .error import PasswordError
 from .tool import TOOL_NAME
-from .yk import getDevice, getController, validate
+from .lib import getDevice, getController, validate
 
 @click.group(name="password")
 @click.pass_context
