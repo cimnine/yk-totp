@@ -10,6 +10,11 @@ from .error import KeyNotFound, UndefinedDevice, WrongPasswordError, UndefinedPa
 @click.option('-p', '--password', required=False, help="Provide the password for the device.")
 @click.pass_context
 def totp_group(ctx, device_serial, password):
+  """
+  Commands to generate TOTP codes.
+
+  This module is used to actually generate and display TOTP codes.
+  """
   ctx.ensure_object(dict)
 
   try:

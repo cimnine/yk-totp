@@ -16,17 +16,45 @@ or where it's inconvenient to repeatedly enter the password.
 
 ## Requirements
 
-This tool requires [_Python 3_][python] and an operating system that is supported by [the `keyring` Python module][keyring].
+This tool requires [Python 3][python] and an operating system that is supported by both,
+[the `keyring` Python module][keyring] and by [the `ykman` tool from YubiCo][ykman].
 
 ## Installation
 
 For now, the way to install `yk-totp` is via PIP:
 
 ```bash
-pip install -U yk-totp
+pip3 install -U yk-totp
 ```
 
 Use the same command to update to a new version.
+
+### Error while installation
+
+If you get errors while installing `yk-totp`, try this:
+
+```bash
+# Update the Python modules responsible for installing other modules
+pip3 install -U pip wheel setuptools
+```
+
+Check [if you have `swig` installed][swig-installation],
+which is apparently required to install `pyscard`,
+which is a dependency of `ykman`:
+
+```bash
+# macOS with Homebrew
+brew install swig
+
+# Linux (apt)
+sudo apt update && sudo apt install swig
+
+# Linux (yum)
+sudo yum install swig
+
+# Windows with Chocolately
+choco install swig
+```
 
 ## Licensing and Copyright
 
@@ -45,3 +73,4 @@ Open source software rocks 🎸!
 [python]: https://www.python.org
 [keyring]: https://github.com/jaraco/keyring#readme
 [click]: https://github.com/pallets/click#readme
+[swig-installation]: http://www.swig.org/Doc4.0/Preface.html#Preface_installation
