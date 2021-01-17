@@ -16,6 +16,9 @@ pip install --editable .
 ## Release
 
 ```bash
+# Check that there are no git changes pending
+git status
+
 # Check Version
 cat yktotp/tool.py | grep VERSION
 
@@ -27,10 +30,12 @@ python3 -m twine upload --repository pypi dist/*
 
 # Git Tag
 git tag x.y.z
-git push --tag
+git push --tags
 
 # Update to next version
 vim yktotp/tool.py
+git commit -m "Prepare for next version" yktotp/tool.py
+git push
 
 # Clean Up
 rm -rf dist build yk_totp.egg-info
