@@ -4,18 +4,23 @@ from ykman.descriptor import list_devices
 from ykman.oath import OathController
 from ykman.util import TRANSPORT
 
-from .error import PasswordError
+from .error import PasswordError, KeyNotFound
 
 def getDevices():
   return list_devices(transports=TRANSPORT.CCID)
 
 
-def getDevice():
+def getDevice(serial=None):
   devices = list(getDevices())
 
   if len(devices) == 0:
-    echo("No YubiKey discovered.")
-    exit(1)
+    return None
+
+  if serial:
+    foundDevice = [ device for device in devices if device.serial == serial ]
+    if len(foundDevice) == 1:
+      return foundDevice[0]
+    raise KeyNotFound
 
   selectedDeviceIndex = 0
   if len(devices) > 1:
