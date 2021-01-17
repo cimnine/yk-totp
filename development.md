@@ -31,4 +31,7 @@ git push --tag
 
 # Update to next version
 vim yktotp/tool.py
+
+# Clean Up
+rm -rf dist build yk_totp.egg-info
 ```
