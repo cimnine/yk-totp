@@ -23,8 +23,10 @@ This tool requires [_Python 3_][python] and an operating system that is supporte
 For now, the way to install `yk-totp` is via PIP:
 
 ```bash
-pip install yk-totp
+pip install -U yk-totp
 ```
+
+Use the same command to update to a new version.
 
 ## Licensing and Copyright
 
