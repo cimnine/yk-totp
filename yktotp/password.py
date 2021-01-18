@@ -9,8 +9,9 @@ from .tool import TOOL_NAME
 from .lib import getDevice, getController, validate
 
 @click.group(name="password")
+@click.option('-d', '--device-serial', type=int, required=False, help="Set the password for this device.")
 @click.pass_context
-def password_group(ctx):
+def password_group(ctx, device_serial):
   """
   Provides commands for storing your password.
 
@@ -18,7 +19,7 @@ def password_group(ctx):
   password repeatedly.
   """
   ctx.ensure_object(dict)
-  ctx.obj['device'] = getDevice()
+  ctx.obj['device'] = getDevice(device_serial)
 
 
 @password_group.command()
