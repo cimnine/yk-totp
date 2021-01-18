@@ -31,8 +31,12 @@ def list(version, form_factor, password, remembered_password, require_password, 
     suffix = ""
 
     if version:
+      suffix += ", Version "
       v = device.version
-      suffix += ", Version %d.%d.%d" % (v[0], v[1], v[2])
+      if v:
+        suffix += " %d.%d.%d" % (v[0], v[1], v[2])
+      else:
+        suffix += " unknow"
 
     if form_factor:
       suffix += ", %s" % device.form_factor
