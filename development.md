@@ -8,8 +8,8 @@ python3 -m venv .venv
 
 # Load venv
 source .venv/bin/activate
-python3 -m pip install -U pip setuptools wheel
-python3 -m pip install -r requirements.txt
+python3 -m pip install -U pip
+pip3 install -Ur requirements.txt
 
 # Install locally so that you can edit the code
 pip3 install --editable .

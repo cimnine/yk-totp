@@ -2,3 +2,6 @@ click
 keyring
 yubikey-manager
 setuptools
+twine
+wheel
+pip
