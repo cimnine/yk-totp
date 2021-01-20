@@ -4,7 +4,7 @@ import keyring
 from click import echo
 from click.exceptions import Abort
 
-from .error import WrongPasswordError
+from .error import WrongPasswordError, KeyNotFound
 from .tool import TOOL_NAME
 from .lib import getDevice, getController, validate
 
@@ -19,7 +19,11 @@ def password_group(ctx, device_serial):
   password repeatedly.
   """
   ctx.ensure_object(dict)
-  ctx.obj['device'] = getDevice(device_serial)
+  try:
+    ctx.obj['device'] = getDevice(device_serial)
+  except KeyNotFound:
+    echo("The YubiKey '%s' is not connected right now." % device_serial)
+    exit(1)
 
 
 @password_group.command()

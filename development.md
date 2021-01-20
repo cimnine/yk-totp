@@ -26,6 +26,7 @@ git status
 
 # Check Version
 cat yktotp/tool.py | grep VERSION
+cat setup.cfg | grep version
 
 # Build egg locally
 python3 setup.py sdist bdist_wheel
@@ -38,7 +39,7 @@ git tag x.y.z
 git push --tags
 
 # Update to next version
-vim yktotp/tool.py
+vim yktotp/tool.py setup.cfg
 git commit -m "Prepare for next version" yktotp/tool.py
 git push
 
