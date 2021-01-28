@@ -34,19 +34,19 @@ def list(version, form_factor, password, remembered_password, require_password, 
       suffix += ", Version "
       v = device.version
       if v:
-        suffix += " %d.%d.%d" % (v[0], v[1], v[2])
+        suffix += f" {v[0]}.{v[1]}.{v[2]}"
       else:
         suffix += " unknow"
 
     if form_factor:
-      suffix += ", %s" % device.form_factor
+      suffix += f", {device.form_factor}"
 
     serial = str(device.serial)
 
     password_remembered = get_password(TOOL_NAME, serial) != None
     if remembered_password:
-      suffix += ", Password Remembered: %s" % (
-          "yes" if password_remembered else "no")
+      suffix += ", Password Remembered: "
+      suffix += "yes" if password_remembered else "no"
 
     device_requires_password = None
     if password or require_password:
@@ -54,8 +54,8 @@ def list(version, form_factor, password, remembered_password, require_password, 
       device_requires_password = controller.locked
 
     if password:
-      suffix += ", Password Required: %s" % (
-        "yes" if device_requires_password else "no")
+      suffix += ", Password Required: "
+      suffix += "yes" if device_requires_password else "no"
 
     if require_password != require_no_password:
       if require_password and device_requires_password and password_remembered:

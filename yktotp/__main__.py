@@ -19,8 +19,8 @@ def version():
   """
   Shows version information.
   """
-  echo("%s Version: %s" % (TOOL_NAME, TOOL_VERSION))
-  echo("YubiKey Manager Version: %s" % YKMAN_VERSION)
+  echo(f"{TOOL_NAME} Version: {TOOL_VERSION}")
+  echo(f"YubiKey Manager Version: {YKMAN_VERSION}")
 
 
 for SUBGROUP in SUBGROUPS:

@@ -22,7 +22,7 @@ def password_group(ctx, device_serial):
   try:
     ctx.obj['device'] = getDevice(device_serial)
   except KeyNotFound:
-    echo("The YubiKey '%s' is not connected right now." % device_serial)
+    echo(f"The YubiKey '{device_serial}' is not connected right now.")
     exit(1)
 
 
@@ -43,12 +43,12 @@ def remember(ctx):
   yk_serial = device.serial
 
   if not controller.locked:
-    echo("The YubiKey '%s' is not password protected." % yk_serial)
+    echo(f"The YubiKey '{yk_serial}' is not password protected.")
     exit(1)
 
   while True:
     try:
-      password = click.prompt("Password for YubiKey '%s'" % yk_serial, hide_input=True, err=True)
+      password = click.prompt(f"Password for YubiKey '{yk_serial}'", hide_input=True, err=True)
       validate(password, controller)
       break
     except Abort:
@@ -58,7 +58,8 @@ def remember(ctx):
       continue
 
   keyring.set_password(TOOL_NAME, str(yk_serial), password)
-  echo("The password was stored in %s." % keyring.get_keyring().name)
+  keyring_name = keyring.get_keyring().name
+  echo(f"The password was stored in {keyring_name}.")
 
 
 @password_group.command()

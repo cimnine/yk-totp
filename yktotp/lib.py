@@ -28,7 +28,7 @@ def getDevice(serial=None):
   selectedDeviceIndex = 0
   if len(devices) > 1:
     for deviceIndex in range(len(devices)):
-      echo("%d   %s" % (deviceIndex+1, devices[deviceIndex].serial))
+      echo(f"{deviceIndex+1}   {devices[deviceIndex].serial}")
 
     while True:
       try:
@@ -65,7 +65,7 @@ def getUnlockedController(device=None, password=None):
     password = getPassword(device)
   if not password:
     try:
-      password = prompt("Password for YubiKey '%d'" % device.serial, hide_input=True, type=str, err=True)
+      password = prompt(f"Password for YubiKey '{device.serial}'", hide_input=True, type=str, err=True)
     except Abort:
       raise UndefinedPasswordError
 

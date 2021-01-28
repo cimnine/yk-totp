@@ -23,17 +23,17 @@ def totp_group(ctx, device_serial, password):
 
     ctx.obj['controller'] = getUnlockedController(device=device, password=password)
   except KeyNotFound:
-    echo("Could not find YubiKey '%d'." % device_serial)
+    echo(f"Could not find YubiKey '{device_serial}'.")
     exit(1)
   except UndefinedPasswordError:
-    echo("The YubiKey '%d' requires a password, but none was given." % device_serial)
+    echo(f"The YubiKey '{device_serial}' requires a password, but none was given.")
     exit(1)
   except WrongPasswordError:
-    echo("The given or remembered password could not be validated for YubiKey '%d', please check the password." % device_serial)
+    echo(f"The given or remembered password could not be validated for YubiKey '{device_serial}', please check the password.")
     exit(1)
   except UndefinedDevice:
     if device_serial:
-      echo("No YubiKey discovered that matches '%d'." % device_serial)
+      echo(f"No YubiKey discovered that matches '{device_serial}'.")
     else:
       echo("No YubiKey discovered.")
     exit(1)
@@ -79,7 +79,7 @@ def codes(obj, exact, ignore_case, query):
 
   codes.sort(key=lambda x: x[0].printable_key)
   for (cred, code) in codes:
-    echo("%s: %s" % (cred.printable_key, code.value))
+    echo(f"{cred.printable_key}: {code.value}")
 
 @totp_group.command()
 @click.pass_obj
@@ -95,4 +95,4 @@ def list(obj):
   credentials = [ cred.printable_key for cred in controller.list() ]
   credentials.sort()
   for cred in credentials:
-    echo("%s" % cred)
+    echo(str(cred))
