@@ -14,7 +14,7 @@ whereas `ykman` stores your password in it's config file.
 this hash is all that is required to get to your 2FA,
 yet this hash is not protected in anyway.)
 
-This allows `yk-totp` to be used in other tools (like in an [Alfred Worflow][alred-wf])
+This allows `yk-totp` to be used in other tools (like in an [Alfred Worflow][alfred-wf])
 which don't offer facilities to store or enter a password,
 or where it's inconvenient to repeatedly enter the password.
 
