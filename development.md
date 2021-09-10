@@ -40,7 +40,7 @@ git push --tags
 
 # Update to next version
 vim yktotp/tool.py setup.cfg
-git commit -m "Prepare for next version" yktotp/tool.py
+git commit -m "Prepare for next version" yktotp/tool.py setup.cfg
 git push
 
 # Clean Up
