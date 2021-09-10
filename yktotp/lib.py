@@ -2,91 +2,98 @@ import keyring
 
 from click import echo, prompt
 from click.exceptions import Abort
-from ykman.descriptor import list_devices
-from ykman.oath import OathController
-from ykman.util import TRANSPORT
+from typing import Optional
+from ykman.base import YkmanDevice
+from ykman.device import list_all_devices
+from yubikit.core.smartcard import SmartCardConnection
+from yubikit.oath import OathSession
+from yubikit.management import DeviceInfo
 
 from .tool import TOOL_NAME
 from .error import WrongPasswordError, UndefinedPasswordError, KeyNotFound, UndefinedDevice
 
-def getDevices():
-  return list_devices(transports=TRANSPORT.CCID)
 
-
-def getDevice(serial=None):
-  devices = list(getDevices())
+def get_device(serial=None) -> Optional[tuple[YkmanDevice, DeviceInfo]]:
+  devices = list_all_devices()
 
   if len(devices) == 0:
     return None
 
   if serial:
-    foundDevice = [ device for device in devices if device.serial == serial ]
-    if len(foundDevice) == 1:
-      return foundDevice[0]
+    found_device = [device_info for device_info in devices if device_info[1].serial == serial]
+    if len(found_device) == 1:
+      return found_device[0]
     raise KeyNotFound
 
-  selectedDeviceIndex = 0
+  selected_device_index = 0
   if len(devices) > 1:
-    for deviceIndex in range(len(devices)):
-      echo(f"{deviceIndex+1}   {devices[deviceIndex].serial}")
+    for device_index in range(len(devices)):
+      _, device_info = devices[device_index]
+      echo(f"{device_index + 1}   {device_info.serial}")
 
     while True:
       try:
-        selectedDeviceIndex = -1 + \
-            int(prompt("Select device: ", default=1, type=int))
-        if selectedDeviceIndex >= 0 and selectedDeviceIndex < len(devices):
+        selected_device_index = -1 + \
+                                int(prompt("Select device: ", default=1, type=int))
+        if 0 <= selected_device_index < len(devices):
           break
       except Abort:
         exit(1)
       except ValueError:
         continue
 
-  return devices[selectedDeviceIndex]
+  return devices[selected_device_index]
 
 
-def getController(device=None):
-  if device is None:
-    device = getDevice()
+def get_session(device_info: tuple[YkmanDevice, DeviceInfo] = None) -> OathSession:
+  if device_info is None:
+    device_info = get_device()
 
-  return OathController(device.driver)
+  device, _ = device_info
+  connection = device.open_connection(SmartCardConnection)
+  return OathSession(connection=connection)
 
 
-def getUnlockedController(device=None, password=None):
-  if device is None:
-    device = getDevice()
-  if device is None:
+def get_unlocked_session(device_info: Optional[tuple[YkmanDevice, DeviceInfo]] = None, password: Optional[str] = None) -> OathSession:
+  if device_info is None:
+    device_info = get_device()
+  if device_info is None:
     raise UndefinedDevice
 
-  controller = OathController(device.driver)
-  if not controller.locked:
-    return controller
+  device, info = device_info
+  connection = device.open_connection(SmartCardConnection)
+  session = OathSession(connection=connection)
+  if not info.is_locked:
+    return session
 
   if not password:
-    password = getPassword(device)
+    password = get_password(info)
   if not password:
     try:
-      password = prompt(f"Password for YubiKey '{device.serial}'", hide_input=True, type=str, err=True)
+      password = prompt(f"Password for YubiKey '{info.serial}'", hide_input=True, type=str, err=True)
     except Abort:
       raise UndefinedPasswordError
 
   try:
-    key = controller.derive_key(password)
-    controller.validate(key)
+    key = session.derive_key(password)
+    session.validate(key)
   except Exception:
     raise WrongPasswordError
 
-  return controller
+  return session
 
-def getPassword(device):
+
+def get_password(device: DeviceInfo) -> Optional[str]:
   return keyring.get_password(TOOL_NAME, str(device.serial))
 
-def validate(password, controller=None, device=None):
-  if controller is None:
-    controller = getController(device)
 
-  key = controller.derive_key(password)
+def validate(password: str, session: OathSession = None, device_info: Optional[tuple[YkmanDevice, DeviceInfo]] = None) -> None:
+  if session is None:
+    session = get_session(device_info)
+
+  key = session.derive_key(password)
   try:
-    controller.validate(key)
+    session.validate(key)
     return
   except Exception:
     raise WrongPasswordError

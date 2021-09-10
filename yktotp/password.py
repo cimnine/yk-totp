@@ -6,7 +6,7 @@ from click.exceptions import Abort
 
 from .error import WrongPasswordError, KeyNotFound
 from .tool import TOOL_NAME
-from .lib import getDevice, getController, validate
+from .lib import get_device, get_session, validate
 
 @click.group(name="password")
 @click.option('-d', '--device-serial', type=int, required=False, help="Set the password for this device.")
@@ -20,7 +20,7 @@ def password_group(ctx, device_serial):
   """
   ctx.ensure_object(dict)
   try:
-    ctx.obj['device'] = getDevice(device_serial)
+    ctx.obj['device'] = get_device(device_serial)
   except KeyNotFound:
     echo(f"The YubiKey '{device_serial}' is not connected right now.")
     exit(1)
@@ -38,18 +38,18 @@ def remember(ctx):
   If the password is correct, it is stored to the system's keyring.
   """
   device = ctx.obj['device']
-  controller = getController(device)
+  session = get_session(device)
 
   yk_serial = device.serial
 
-  if not controller.locked:
+  if not session.locked:
     echo(f"The YubiKey '{yk_serial}' is not password protected.")
     exit(1)
 
   while True:
     try:
       password = click.prompt(f"Password for YubiKey '{yk_serial}'", hide_input=True, err=True)
-      validate(password, controller)
+      validate(password, session)
       break
     except Abort:
       exit(1)

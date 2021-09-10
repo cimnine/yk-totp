@@ -2,7 +2,7 @@ import click
 
 from click import echo
 
-from .lib import getUnlockedController, getDevice
+from .lib import get_unlocked_session, get_device
 from .error import KeyNotFound, UndefinedDevice, WrongPasswordError, UndefinedPasswordError
 
 @click.group(name="totp")
@@ -18,10 +18,10 @@ def totp_group(ctx, device_serial, password):
   ctx.ensure_object(dict)
 
   try:
-    device = getDevice(device_serial)
+    device = get_device(device_serial)
     device_serial = device.serial
 
-    ctx.obj['controller'] = getUnlockedController(device=device, password=password)
+    ctx.obj['session'] = get_unlocked_session(device=device, password=password)
   except KeyNotFound:
     echo(f"Could not find YubiKey '{device_serial}'.")
     exit(1)
@@ -51,9 +51,9 @@ def codes(obj, exact, ignore_case, query):
   order.
   Optionally the list can be filtered by providing the QUERY argument.
   """
-  controller = obj['controller']
+  session = obj['session']
 
-  codes = controller.calculate_all()
+  codes = session.calculate_all()
 
   if query:
     if not exact and ignore_case:
@@ -90,9 +90,9 @@ def list(obj):
   This command returns all credentials that are stored in the chosen YubiKey
   in alphabetical order.
   """
-  controller = obj['controller']
+  session = obj['session']
 
-  credentials = [ cred.printable_key for cred in controller.list() ]
+  credentials = [ cred.printable_key for cred in session.list_credentials() ]
   credentials.sort()
   for cred in credentials:
     echo(str(cred))
