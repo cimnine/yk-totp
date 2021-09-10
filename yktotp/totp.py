@@ -1,11 +1,11 @@
-from typing import Optional, Union
+from typing import Optional, Union, Tuple
 
 import click
 from click import echo, Context
 from ykman import YkmanDevice
 from yubikit.core.smartcard import ApduError
 from yubikit.management import DeviceInfo
-from yubikit.oath import OathSession
+from yubikit.oath import OathSession, Credential, Code
 
 from .error import KeyNotFound, UndefinedDevice, WrongPasswordError, UndefinedPasswordError
 from .lib import get_unlocked_session, get_device
@@ -58,7 +58,7 @@ def totp_group(ctx: Context, device_serial: Optional[str], password: Optional[st
 @click.option('+i/-i', '--ignore-case/--no-ignore-case', help="Whether to ignore casing when filtering.")
 @click.argument('query', required=False, type=str)
 @click.pass_obj
-def codes(obj: dict[str, Union[OathSession, DeviceInfo]], exact: Optional[bool], ignore_case: Optional[bool], query: Optional[str]):
+def codes(obj: dict[str, Union[OathSession, tuple[YkmanDevice, DeviceInfo]]], exact: Optional[bool], ignore_case: Optional[bool], query: Optional[str]):
   """
   Generates TOTP codes.
 
@@ -102,10 +102,11 @@ def codes(obj: dict[str, Union[OathSession, DeviceInfo]], exact: Optional[bool],
                     in totp_codes
                     if query == cred.printable_key]
 
-  totp_codes_list = list(totp_codes.items())
-  totp_codes_list.sort(key=lambda t: t[0].name)
-  for (cred, code) in totp_codes_list:
-    echo(f"{cred.name}: {code.value}")
+  totp_codes_list: list[Tuple[Credential, Optional[Code]]] = list(totp_codes.items())
+  totp_codes_list.sort(key=lambda t: t[0].issuer+t[0].name)
+  for cc in totp_codes_list:
+    cred, code = cc
+    echo(f"{cred.issuer} ({cred.name}): {code.value}")
 
 
 @totp_group.command(name='list')
@@ -119,7 +120,7 @@ def list_credentials(obj: dict[str, OathSession]) -> None:
   """
   session = obj['session']
 
-  credentials = [cred.name for cred in session.list_credentials()]
+  credentials = session.list_credentials()
   credentials.sort()
   for cred in credentials:
-    echo(str(cred))
+    echo(f"{cred.issuer} ({cred.name})")
