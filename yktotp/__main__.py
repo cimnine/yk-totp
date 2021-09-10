@@ -1,6 +1,6 @@
 import click
 
-from click import echo
+from click import echo, Command
 from ykman import __version__ as YKMAN_VERSION
 
 from .password import password_group
@@ -8,14 +8,16 @@ from .tool import TOOL_NAME, TOOL_VERSION, TOOL_PREFIX
 from .totp import totp_group
 from .yk import yubikey_group
 
-SUBGROUPS = [password_group, totp_group, yubikey_group]
+SUBGROUPS: list[Command] = [password_group, totp_group, yubikey_group]
+
 
 @click.group()
-def cli():
+def cli() -> None:
   pass
 
+
 @cli.command()
-def version():
+def version() -> None:
   """
   Shows version information.
   """

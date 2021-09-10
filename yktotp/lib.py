@@ -1,16 +1,16 @@
-import keyring
+from typing import Optional
 
+import keyring
 from click import echo, prompt
 from click.exceptions import Abort
-from typing import Optional
 from ykman.base import YkmanDevice
 from ykman.device import list_all_devices
 from yubikit.core.smartcard import SmartCardConnection
-from yubikit.oath import OathSession
 from yubikit.management import DeviceInfo
+from yubikit.oath import OathSession
 
-from .tool import TOOL_NAME
 from .error import WrongPasswordError, UndefinedPasswordError, KeyNotFound, UndefinedDevice
+from .tool import TOOL_NAME
 
 
 def get_device(serial=None) -> Optional[tuple[YkmanDevice, DeviceInfo]]:
@@ -54,7 +54,8 @@ def get_session(device_info: tuple[YkmanDevice, DeviceInfo] = None) -> OathSessi
   return OathSession(connection=connection)
 
 
-def get_unlocked_session(device_info: Optional[tuple[YkmanDevice, DeviceInfo]] = None, password: Optional[str] = None) -> OathSession:
+def get_unlocked_session(device_info: Optional[tuple[YkmanDevice, DeviceInfo]] = None,
+                         password: Optional[str] = None) -> OathSession:
   if device_info is None:
     device_info = get_device()
   if device_info is None:
@@ -87,7 +88,8 @@ def get_password(device: DeviceInfo) -> Optional[str]:
   return keyring.get_password(TOOL_NAME, str(device.serial))
 
 
-def validate(password: str, session: OathSession = None, device_info: Optional[tuple[YkmanDevice, DeviceInfo]] = None) -> None:
+def validate(password: str, session: OathSession = None,
+             device_info: Optional[tuple[YkmanDevice, DeviceInfo]] = None) -> None:
   if session is None:
     session = get_session(device_info)
 

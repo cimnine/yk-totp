@@ -18,16 +18,22 @@ def yubikey_group() -> None:
 
 
 @yubikey_group.command(name="list")
-@click.option('-v', '--version', is_flag=True, help='Show the version of each YubiKey')
-@click.option('-f', '--form-factor', is_flag=True, help='Show the form factor of each YubiKey')
-@click.option('-p', '--password', is_flag=True, help='Show if a password is required or not for each YubiKey')
-@click.option('-r', '--remembered-password', is_flag=True, help='Show if a password is remembered for each YubiKey')
-@click.option('+P', '--require-password', is_flag=True, help='Show devices that require a password (and it is not known).')
-@click.option('-P', '--require-no-password', is_flag=True, help="Show devices that don't require a password (or it is remembered).")
+@click.option('-v', '--version', is_flag=True,
+              help='Show the version of each YubiKey')
+@click.option('-f', '--form-factor', is_flag=True,
+              help='Show the form factor of each YubiKey')
+@click.option('-p', '--password', is_flag=True,
+              help='Show if a password is required or not for each YubiKey')
+@click.option('-r', '--remembered-password', is_flag=True,
+              help='Show if a password is remembered for each YubiKey')
+@click.option('+P', '--require-password', is_flag=True,
+              help='Show devices that require a password (and it is not known).')
+@click.option('-P', '--require-no-password', is_flag=True,
+              help="Show devices that don't require a password (or it is remembered).")
 def list_devices(version, form_factor, password, remembered_password, require_password, require_no_password) -> None:
   devices = list_all_devices()
-  for deviceInfo in devices:
-    device, info = deviceInfo
+  for device_info in devices:
+    device, info = device_info
     suffix = ""
 
     if version:
@@ -50,7 +56,7 @@ def list_devices(version, form_factor, password, remembered_password, require_pa
 
     device_requires_password = None
     if password or require_password:
-      session = get_session(deviceInfo)
+      session = get_session(device_info)
       device_requires_password = session.locked
 
     if password:

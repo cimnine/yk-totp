@@ -1,17 +1,22 @@
+from typing import Optional
+
 import click
 import keyring
 
-from click import echo
+from click import echo, Context
 from click.exceptions import Abort
+
+from keyring.errors import PasswordDeleteError, PasswordSetError
 
 from .error import WrongPasswordError, KeyNotFound
 from .tool import TOOL_NAME
 from .lib import get_device, get_session, validate
 
+
 @click.group(name="password")
 @click.option('-d', '--device-serial', type=int, required=False, help="Set the password for this device.")
 @click.pass_context
-def password_group(ctx, device_serial):
+def password_group(ctx: Context, device_serial: Optional[str]) -> None:
   """
   Provides commands for storing your password.
 
@@ -28,7 +33,7 @@ def password_group(ctx, device_serial):
 
 @password_group.command()
 @click.pass_context
-def remember(ctx):
+def remember(ctx: Context) -> None:
   """
   Asks for a password and remembers it.
 
@@ -46,6 +51,7 @@ def remember(ctx):
     echo(f"The YubiKey '{yk_serial}' is not password protected.")
     exit(1)
 
+  password = ""
   while True:
     try:
       password = click.prompt(f"Password for YubiKey '{yk_serial}'", hide_input=True, err=True)
@@ -57,14 +63,19 @@ def remember(ctx):
       echo("Could not validate password, possibly wrong password. Try again.")
       continue
 
-  keyring.set_password(TOOL_NAME, str(yk_serial), password)
+  try:
+    keyring.set_password(TOOL_NAME, str(yk_serial), password)
+  except PasswordSetError as err:
+    echo(f"Unable to set the password: {err}")
+    exit(1)
+
   keyring_name = keyring.get_keyring().name
   echo(f"The password was stored in {keyring_name}.")
 
 
 @password_group.command()
 @click.pass_context
-def forget(ctx):
+def forget(ctx: Context) -> None:
   """
   Forgets the stored password.
 
@@ -77,5 +88,5 @@ def forget(ctx):
   yk_serial = ctx.obj['device'].serial
   try:
     keyring.delete_password(TOOL_NAME, str(yk_serial))
-  except keyring.errors.PasswordDeleteError:
+  except PasswordDeleteError:
     pass
