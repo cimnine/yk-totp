@@ -64,7 +64,7 @@ def get_unlocked_session(device_info: Optional[tuple[YkmanDevice, DeviceInfo]] =
   device, info = device_info
   connection = device.open_connection(SmartCardConnection)
   session = OathSession(connection=connection)
-  if not info.is_locked:
+  if not session.locked:
     return session
 
   if not password:
@@ -76,8 +76,8 @@ def get_unlocked_session(device_info: Optional[tuple[YkmanDevice, DeviceInfo]] =
       raise UndefinedPasswordError
 
   try:
-    key = session.derive_key(password)
-    session.validate(key)
+    key = session.derive_key(password=password)
+    session.validate(key=key)
   except Exception:
     raise WrongPasswordError
 

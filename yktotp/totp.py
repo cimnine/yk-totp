@@ -1,7 +1,10 @@
-from typing import Optional
+from typing import Optional, Union
 
 import click
 from click import echo, Context
+from ykman import YkmanDevice
+from yubikit.core.smartcard import ApduError
+from yubikit.management import DeviceInfo
 from yubikit.oath import OathSession
 
 from .error import KeyNotFound, UndefinedDevice, WrongPasswordError, UndefinedPasswordError
@@ -26,10 +29,12 @@ def totp_group(ctx: Context, device_serial: Optional[str], password: Optional[st
       echo(f"No YubiKeys detected.")
       exit(0)
 
+    ctx.obj['device_info'] = device_info
     device, info = device_info
     device_serial = info.serial
 
-    ctx.obj['session'] = get_unlocked_session(device_info=device_info, password=password)
+    session = get_unlocked_session(device_info=device_info, password=password)
+    ctx.obj['session'] = session
   except KeyNotFound:
     echo(f"Could not find YubiKey '{device_serial}'.")
     exit(1)
@@ -53,7 +58,7 @@ def totp_group(ctx: Context, device_serial: Optional[str], password: Optional[st
 @click.option('+i/-i', '--ignore-case/--no-ignore-case', help="Whether to ignore casing when filtering.")
 @click.argument('query', required=False, type=str)
 @click.pass_obj
-def codes(obj: dict[str, OathSession], exact: Optional[bool], ignore_case: Optional[bool], query: Optional[str]):
+def codes(obj: dict[str, Union[OathSession, DeviceInfo]], exact: Optional[bool], ignore_case: Optional[bool], query: Optional[str]):
   """
   Generates TOTP codes.
 
@@ -61,9 +66,19 @@ def codes(obj: dict[str, OathSession], exact: Optional[bool], ignore_case: Optio
   order.
   Optionally the list can be filtered by providing the QUERY argument.
   """
-  session = obj['session']
+  session: OathSession = obj['session']
+  device_info: tuple[YkmanDevice, DeviceInfo] = obj['device_info']
+  _, info = device_info
 
-  totp_codes = session.calculate_all()
+  if session.has_key and session.locked:
+    echo(f"The YubiKey {info.serial} is locked.")
+    exit(1)
+
+  try:
+    totp_codes = session.calculate_all()
+  except ApduError as err:
+    echo(f"Unable to generate codes with YubiKey {info.serial}: {err}")
+    exit(1)
 
   if query:
     if not exact and ignore_case:
