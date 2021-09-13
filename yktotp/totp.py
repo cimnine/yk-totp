@@ -58,7 +58,8 @@ def totp_group(ctx: Context, device_serial: Optional[str], password: Optional[st
 @click.option('+i/-i', '--ignore-case/--no-ignore-case', help="Whether to ignore casing when filtering.")
 @click.argument('query', required=False, type=str)
 @click.pass_obj
-def codes(obj: dict[str, Union[OathSession, tuple[YkmanDevice, DeviceInfo]]], exact: Optional[bool], ignore_case: Optional[bool], query: Optional[str]):
+def codes(obj: dict[str, Union[OathSession, tuple[YkmanDevice, DeviceInfo]]], exact: Optional[bool],
+          ignore_case: Optional[bool], query: Optional[str]):
   """
   Generates TOTP codes.
 
@@ -80,33 +81,37 @@ def codes(obj: dict[str, Union[OathSession, tuple[YkmanDevice, DeviceInfo]]], ex
     echo(f"Unable to generate codes with YubiKey {info.serial}: {err}")
     exit(1)
 
+  totp_codes_list: list[Tuple[Credential, Optional[Code]]] = list(totp_codes.items())
+
   if query:
     if not exact and ignore_case:
-      totp_codes = [(cred, totp_code)
-                    for (cred, totp_code)
-                    in totp_codes
-                    if query.lower() in cred.printable_key.lower()]
+      totp_codes_list = [(cred, totp_code)
+                         for (cred, totp_code)
+                         in totp_codes_list
+                         if query.lower() in (cred.issuer + cred.name).lower()]
     if not exact and not ignore_case:
-      totp_codes = [(cred, totp_code)
-                    for (cred, totp_code)
-                    in totp_codes
-                    if query in cred.printable_key]
+      totp_codes_list = [(cred, totp_code)
+                         for (cred, totp_code)
+                         in totp_codes_list
+                         if query in cred.issuer + cred.name]
     if exact and ignore_case:
-      totp_codes = [(cred, totp_code)
-                    for (cred, totp_code)
-                    in totp_codes
-                    if query.lower() == cred.printable_key.lower()]
+      totp_codes_list = [(cred, totp_code)
+                         for (cred, totp_code)
+                         in totp_codes_list
+                         if query.lower() == (cred.issuer + cred.name).lower()]
     if exact and not ignore_case:
-      totp_codes = [(cred, totp_code)
-                    for (cred, totp_code)
-                    in totp_codes
-                    if query == cred.printable_key]
+      totp_codes_list = [(cred, totp_code)
+                         for (cred, totp_code)
+                         in totp_codes_list
+                         if query == cred.issuer + cred.name]
 
-  totp_codes_list: list[Tuple[Credential, Optional[Code]]] = list(totp_codes.items())
-  totp_codes_list.sort(key=lambda t: t[0].issuer+t[0].name)
+  totp_codes_list.sort(key=lambda t: t[0].issuer + t[0].name)
   for cc in totp_codes_list:
     cred, code = cc
-    echo(f"{cred.issuer} ({cred.name}): {code.value}")
+    if cred.issuer:
+      echo(f"{cred.issuer} ({cred.name}): {code.value}")
+    else:
+      echo(f"{cred.name}: {code.value}")
 
 
 @totp_group.command(name='list')
