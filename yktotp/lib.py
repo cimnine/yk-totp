@@ -45,9 +45,11 @@ def get_device(serial=None) -> Optional[tuple[YkmanDevice, DeviceInfo]]:
   return devices[selected_device_index]
 
 
-def get_session(device_info: tuple[YkmanDevice, DeviceInfo] = None) -> OathSession:
-  if device_info is None:
+def get_session(device_info: Optional[tuple[YkmanDevice, DeviceInfo]] = None) -> Optional[OathSession]:
+  if not device_info:
     device_info = get_device()
+  if not device_info:
+    return None
 
   device, _ = device_info
   connection = device.open_connection(SmartCardConnection)

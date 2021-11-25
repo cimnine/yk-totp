@@ -45,7 +45,13 @@ def remember(ctx: Context) -> None:
   device = ctx.obj['device']
   session = get_session(device)
 
-  yk_serial = device.serial
+  if not session:
+    echo(f"No YubiKey detected.")
+    exit(1)
+
+  _, info = device
+
+  yk_serial = info.serial
 
   if not session.locked:
     echo(f"The YubiKey '{yk_serial}' is not password protected.")

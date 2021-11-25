@@ -12,7 +12,7 @@ to store the password for unlocking your YubiKey in your system's keyring,
 whereas `ykman` stores your password in it's config file.
 (While the password is stored as `PBKDF2HMAC`-hash and not in plain-text,
 this hash is all that is required to get to your 2FA,
-yet this hash is not protected in anyway.)
+yet this hash is not protected in any way.)
 
 This allows `yk-totp` to be used in other tools (like in an [Alfred Worflow][alfred-wf])
 which don't offer facilities to store or enter a password,
@@ -58,6 +58,30 @@ sudo yum install swig
 
 # Windows with Chocolately
 choco install swig
+```
+
+## Development
+
+```bash
+python3 -m venv .venv
+source .venv/bin/active
+python3 -m pip install -U pip setuptools wheel
+python3 -m pip install -r requirements.txt
+python3 -m pip install -e .
+```
+
+## Release
+
+See https://packaging.python.org/tutorials/packaging-projects/.
+
+tl;dr:
+
+```bash
+rm -rf dist *.egg-info
+python3 -m pip install -U build twine
+python3 -m build
+python3 -m twine upload dist/*
+# Username: __token__
 ```
 
 ## Licensing and Copyright
